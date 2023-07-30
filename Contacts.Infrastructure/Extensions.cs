@@ -1,6 +1,7 @@
 ﻿using Contacts.Domain.Repositories;
-using Contacts.Infrastructure.Repositories.Postgres;
+using Contacts.Infrastructure.Repositories;
 using Contacts.Infrastructure.Repositories.Postgres.DbContext;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,9 @@ public static class Extensions
         
             .AddPostgresDb<ApplicationDbContext>(() =>
             {
+                services.AddScoped<IUsersRepository, UsersRepository>();
                 services.AddScoped<IContactsRepository, ContactsRepository>();
+                services.AddScoped<ICategoryRepository, CategoryRepository>();
             });
             
         return services;
@@ -58,6 +61,23 @@ public static class Extensions
         
         hostBuilder.UseSerilog();
 
+        return services;
+    }
+    
+    /// <summary>
+    /// Adds objects mappings with use of Mapster library.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddMapsterMappings(this IServiceCollection services)
+    {
+        TypeAdapterConfig.GlobalSettings.Default
+            .NameMatchingStrategy(NameMatchingStrategy.Flexible);
+        
+        Mappings.Mappings.UsersMappings();
+        Mappings.Mappings.ContactsMappings();
+        Mappings.Mappings.CategoriesMappings();
+        
         return services;
     }
 }

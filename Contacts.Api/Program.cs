@@ -15,10 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddConfiguration(configuration);
 
 builder.Services
-    //.AddLogging()
+    .AddLogging()
     .AddSeqLogger(configuration, builder.Host)
     .AddHttpContextAccessor()
-    .RegisterServices();
+    .RegisterServices()
+    .AddMapsterMappings();
 
 var app = builder.Build();
 
