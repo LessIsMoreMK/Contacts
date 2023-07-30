@@ -14,15 +14,22 @@ public interface ICategoryRepository
     public Task<IEnumerable<Category>> GetAllCategoriesWithSubcategoriesAsync();
     
     /// <summary>
-    /// Adds a new category to the database.
-    /// </summary>
-    /// <param name="category">The Category entity to add.</param>
-    public Task AddCategoryAsync(Category category);
-    
-    /// <summary>
     /// Finds and returns a category by name.
     /// </summary>
     /// <param name="categoryName">The name of the category.</param>
     /// <returns>A Category entity, if found; otherwise, null.</returns>
     public Task<Category?> GetCategoryByNameAsync(string categoryName);
+    
+    /// <summary>
+    /// Finds and returns a category using its unique identifier.
+    /// </summary>
+    /// <param name="categoryId">The unique identifier of the category.</param>
+    /// <returns>A Category entity, if found; otherwise, null.</returns>
+    public Task<Category?> GetCategoryByIdAsync(Guid categoryId);
+    
+    /// <summary>
+    /// Adds a new category to the database.
+    /// </summary>
+    /// <param name="category">The Category entity to add.</param>
+    public Task AddCategoryAsync(Category category);
 }

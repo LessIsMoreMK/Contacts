@@ -1,4 +1,10 @@
-﻿using Contacts.Domain.Repositories;
+﻿using Contacts.Application.Commands;
+using Contacts.Application.Commands.Categories;
+using Contacts.Application.Commands.Categories.Handlers;
+using Contacts.Application.Commands.Contacts;
+using Contacts.Application.Commands.Contacts.Handlers;
+using Contacts.Application.Helpers;
+using Contacts.Domain.Repositories;
 using Contacts.Infrastructure.Repositories;
 using Contacts.Infrastructure.Repositories.Postgres.DbContext;
 using Mapster;
@@ -22,6 +28,7 @@ public static class Extensions
     {
         services
             .AddSingleton<DatabaseInitializer>()
+            .AddSingleton<LoggerHelpers>()
         
             .AddPostgresDb<ApplicationDbContext>(() =>
             {
@@ -30,6 +37,19 @@ public static class Extensions
                 services.AddScoped<ICategoryRepository, CategoryRepository>();
             });
             
+        return services;
+    }
+    
+    /// <summary>
+    /// Registers command handlers.
+    /// </summary>
+    public static IServiceCollection RegisterCommandHandlers(this IServiceCollection services)
+    {
+        services
+            .AddTransient<ICommandHandler<AddCategoryRequest>, AddCategoryHandler>()
+            .AddTransient<ICommandHandler<AddContactRequest>, AddContactHandler>()
+            .AddTransient<ICommandHandler<UpdateContactRequest>, UpdateContactHandler>();
+        
         return services;
     }
     

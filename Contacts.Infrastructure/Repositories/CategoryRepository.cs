@@ -39,6 +39,24 @@ public class CategoryRepository : ICategoryRepository
         return categoriesDb.Adapt<List<Category>>();
     }
 
+    public async Task<Category?> GetCategoryByIdAsync(Guid categoryId)
+    {
+        var categoryDb = await _dbContext.Categories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == categoryId);
+                
+        return categoryDb?.Adapt<Category>();
+    }
+    
+    public async Task<Category?> GetCategoryByNameAsync(string categoryName)
+    {
+        var contactDb = await _dbContext.Categories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Name == categoryName);
+                
+        return contactDb?.Adapt<Category>();
+    }
+
     public async Task AddCategoryAsync(Category category)
     {
         if (category == null) 
@@ -48,15 +66,6 @@ public class CategoryRepository : ICategoryRepository
         
         await _dbContext.Categories.AddAsync(cryptoDataDb);
         await _dbContext.SaveChangesAsync();
-    }
-
-    public async Task<Category?> GetCategoryByNameAsync(string categoryName)
-    {
-        var contactDb = await _dbContext.Categories
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Name == categoryName);
-                
-        return contactDb?.Adapt<Category>();
     }
 
     #endregion

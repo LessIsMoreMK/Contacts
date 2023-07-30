@@ -43,5 +43,6 @@ public interface IContactsRepository
     /// Deletes a contact from the database using its unique identifier.
     /// </summary>
     /// <param name="contactId">The unique identifier of the contact to delete.</param>
-    public Task DeleteContactAsync(Guid contactId);
+    /// <returns>True if successfully delete; otherwise false</returns>
+    public Task<bool> DeleteContactAsync(Guid contactId);
 }

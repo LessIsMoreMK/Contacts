@@ -19,6 +19,7 @@ builder.Services
     .AddSeqLogger(configuration, builder.Host)
     .AddHttpContextAccessor()
     .RegisterServices()
+    .RegisterCommandHandlers()
     .AddMapsterMappings();
 
 var app = builder.Build();

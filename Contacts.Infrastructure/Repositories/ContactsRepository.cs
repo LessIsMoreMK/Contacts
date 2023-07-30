@@ -69,21 +69,29 @@ public class ContactsRepository : IContactsRepository
         if (contact == null) 
             throw new ArgumentNullException(nameof(contact));
         
-        var contactToDb = contact.Adapt<ContactsDb>();
-        
-        var contactDb = (ContactsDb) (await _dbContext.FindAsync(typeof(ContactsDb), contactToDb.Id))!;
-            
-        _dbContext.Entry(contactDb).CurrentValues.SetValues(contactToDb);
+        var existingContactDb = await _dbContext.Contacts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == contact.Id);
+    
+        if (existingContactDb == null)
+            throw new ArgumentNullException($"Contact not found. Id: " + contact.Id);
+
+        _dbContext.Entry(existingContactDb).CurrentValues.SetValues(contact.Adapt<ContactsDb>());
+        await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteContactAsync(Guid contactId)
+    public async Task<bool> DeleteContactAsync(Guid contactId)
     {
         if (contactId == Guid.Empty)
             throw new ArgumentNullException(nameof(contactId));
             
         var contactDb = await _dbContext.Contacts.FindAsync(contactId);
-        if (contactDb != null)
-            _dbContext.Contacts.Remove(contactDb);
+        if (contactDb == null)
+            return false;
+        
+        _dbContext.Contacts.Remove(contactDb);
+        await _dbContext.SaveChangesAsync();
+        return true;
     }
     
     #endregion
