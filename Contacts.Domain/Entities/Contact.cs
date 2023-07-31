@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Contacts.Domain.Entities;
 
+//NOTE: Properties are public for Builder pattern used it tests
 public partial class Contact
 {
     #region Constants 
@@ -14,13 +15,13 @@ public partial class Contact
     
     #region Properties
     
-    public Guid Id { get; private set; }
-    public string FirstName { get; private set;} = null!;
-    public string? LastName { get; private set; } 
-    public string? Email { get; private set; } 
-    public string? Phone { get; private set; } 
-    public DateTime? BirthDate { get; private set; }
-    public Guid CategoryId { get; private set; }
+    public Guid Id { get; set; }
+    public string FirstName { get; set; } = null!;
+    public string? LastName { get; set; } 
+    public string? Email { get; set; } 
+    public string? Phone { get; set; } 
+    public DateTime? BirthDate { get; set; }
+    public Guid CategoryId { get; set; }
     
     #endregion
     

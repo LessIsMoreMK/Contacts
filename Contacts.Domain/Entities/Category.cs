@@ -1,12 +1,13 @@
 ﻿namespace Contacts.Domain.Entities;
 
+//NOTE: Properties are public for Builder pattern used it tests
 public class Category
 {
     #region Properties
     
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
     
-    public string Name { get; private set; } = null!;
+    public string Name { get; set; } = null!;
 
     public ICollection<Subcategory> Subcategories { get; set; } = null!;
     
