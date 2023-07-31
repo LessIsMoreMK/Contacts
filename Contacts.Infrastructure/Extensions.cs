@@ -1,4 +1,5 @@
-﻿using Contacts.Application.Commands;
+﻿using System.Text;
+using Contacts.Application.Commands;
 using Contacts.Application.Commands.Categories;
 using Contacts.Application.Commands.Categories.Handlers;
 using Contacts.Application.Commands.Contacts;
@@ -12,10 +13,12 @@ using Contacts.Infrastructure.Repositories;
 using Contacts.Infrastructure.Repositories.Postgres.DbContext;
 using Contacts.Infrastructure.Services;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 namespace Contacts.Infrastructure;
@@ -40,8 +43,22 @@ public static class Extensions
                 services.AddScoped<IUsersRepository, UsersRepository>();
                 services.AddScoped<IContactsRepository, ContactsRepository>();
                 services.AddScoped<ICategoryRepository, CategoryRepository>();
-            });
+            })
             
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                        services.BuildServiceProvider().GetRequiredService<IConfiguration>()["jwt:key"]!))
+                };
+            });
+        
         return services;
     }
     

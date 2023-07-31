@@ -20,12 +20,16 @@ builder.Services
     .AddHttpContextAccessor()
     .RegisterServices()
     .RegisterCommandHandlers()
-    .AddMapsterMappings();
+    .AddMapsterMappings()
+    .AddAuthorization();
 
 var app = builder.Build();
 
 var dbInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
 await dbInitializer.Initialize();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 EndpointBuilder.BuildApplicationEndpoints(app);
 

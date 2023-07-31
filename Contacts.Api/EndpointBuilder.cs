@@ -3,10 +3,10 @@ using Contacts.Application.Commands;
 using Contacts.Application.Commands.Categories;
 using Contacts.Application.Commands.Contacts;
 using Contacts.Application.Commands.Users;
-using Contacts.Application.Commands.Users.Handlers;
 using Contacts.Application.Dtos;
 using Contacts.Application.Helpers;
 using Contacts.Domain.Repositories;
+using Contacts.Domain.Services;
 using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -45,10 +45,10 @@ public static class EndpointBuilder
     private static void BuildCategoriesEndpoints(WebApplication app)
     {
         // Endpoint to fetch all categories with their subcategories
-        app.MapGet("/categories", HandleGetCategories);
+        app.MapGet("/categories", HandleGetCategories).RequireAuthorization();
 
         // Endpoint to add a new category
-        app.MapPost("/categories", HandleAddCategory).WithName("AddCategory");
+        app.MapPost("/categories", HandleAddCategory).WithName("AddCategory").RequireAuthorization();
     }
     
     /// <summary>
@@ -61,16 +61,16 @@ public static class EndpointBuilder
         app.MapGet("/contacts", HandleGetAllContacts);
     
         // Endpoint to fetch a contact by id
-        app.MapGet("/contacts/{id:guid}", HandleGetContactById);
+        app.MapGet("/contacts/{id:guid}", HandleGetContactById).RequireAuthorization();
 
         // Endpoint to add a new contact
-        app.MapPost("/contacts", HandleAddContact);
+        app.MapPost("/contacts", HandleAddContact).RequireAuthorization();
     
         // Endpoint to update an existing contact
-        app.MapPut("/contacts", HandleUpdateContact);
+        app.MapPut("/contacts", HandleUpdateContact).RequireAuthorization();
 
         // Endpoint to delete a contact by id
-        app.MapDelete("/contacts/{id:guid}", HandleDeleteContact);
+        app.MapDelete("/contacts/{id:guid}", HandleDeleteContact).RequireAuthorization();
     }
     
     /// <summary>
@@ -81,6 +81,9 @@ public static class EndpointBuilder
     {
         // Endpoint to add a new user
         app.MapPost("/users", HandleAddUser);
+        
+        // Endpoint to login
+        app.MapPost("/login", HandleLogin);
     }
     
     #endregion
@@ -257,6 +260,38 @@ public static class EndpointBuilder
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
+    }
+    
+    private static async Task HandleLogin(HttpContext context)
+    {
+        var loginRequest = await context.Request.ReadFromJsonAsync<LoginRequest>();
+    
+        if (loginRequest == null)
+        {
+            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+            await context.Response.WriteAsJsonAsync(new { Error = "Request body is null" });
+            return;
+        }
+
+        var usersRepository = context.RequestServices.GetRequiredService<IUsersRepository>();
+        var passwordService = context.RequestServices.GetRequiredService<IPasswordService>();
+    
+        var user = await usersRepository.GetUserByUserNameAsync(loginRequest.UserName);
+    
+        if (user == null)
+        {
+            await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Unauthorized, "Invalid username or password");
+            return;
+        }
+    
+        if (!passwordService.VerifyPassword(loginRequest.Password, user.Password, user.Salt))
+        {
+            await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Unauthorized, "Invalid username or password");
+            return;
+        }
+    
+        var token = passwordService.GenerateJwtToken(user);
+        await context.Response.WriteAsJsonAsync(new { token });
     }
     
     #endregion
