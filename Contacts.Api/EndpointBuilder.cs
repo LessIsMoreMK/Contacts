@@ -2,6 +2,8 @@
 using Contacts.Application.Commands;
 using Contacts.Application.Commands.Categories;
 using Contacts.Application.Commands.Contacts;
+using Contacts.Application.Commands.Users;
+using Contacts.Application.Commands.Users.Handlers;
 using Contacts.Application.Dtos;
 using Contacts.Application.Helpers;
 using Contacts.Domain.Repositories;
@@ -31,6 +33,7 @@ public static class EndpointBuilder
         
         BuildCategoriesEndpoints(app);
         BuildContactsEndpoints(app);
+        BuildUsersEndpoints(app);
         
         return app;
     }
@@ -68,6 +71,16 @@ public static class EndpointBuilder
 
         // Endpoint to delete a contact by id
         app.MapDelete("/contacts/{id:guid}", HandleDeleteContact);
+    }
+    
+    /// <summary>
+    /// Method to configure users related endpoints.
+    /// </summary>
+    /// <param name="app">WebApplication instance to configure</param>
+    private static void BuildUsersEndpoints(WebApplication app)
+    {
+        // Endpoint to add a new user
+        app.MapPost("/users", HandleAddUser);
     }
     
     #endregion
@@ -211,6 +224,33 @@ public static class EndpointBuilder
                 httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
             else 
                 httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
+        }
+        catch (Exception ex)
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
+        }
+    }
+    
+    #endregion
+    
+    #region Users
+    
+    public static async Task HandleAddUser(
+        HttpContext httpContext)
+    {
+        try
+        {
+            var addUserRequest = await httpContext.Request.ReadFromJsonAsync<AddUserRequest>();
+            if (addUserRequest == null)
+            {
+                httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(new { Error = "Request body is null" });
+                return;
+            }
+
+            var addUserHandler = httpContext.RequestServices.GetRequiredService<ICommandHandler<AddUserRequest>>();
+            await addUserHandler.HandleAsync(addUserRequest, httpContext);
         }
         catch (Exception ex)
         {

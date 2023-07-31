@@ -7,9 +7,8 @@ public partial class Contact
 {
     #region Constants 
     
-    [GeneratedRegex("^[\\w\\.-]+@[\\w\\.-]+\\.\\w+$")]
-    private static partial Regex MyRegex();
-    private static readonly Regex EmailRegex = MyRegex();
+    // Regex pattern to validate an email address
+    private static readonly Regex EmailRegex = new Regex(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
     
     #endregion
     
@@ -61,8 +60,6 @@ public partial class Contact
         return contact;
     }
   
-    #endregion
-
     /// <summary>
     /// Updates a contact instance after data validation.
     /// </summary>
@@ -90,4 +87,6 @@ public partial class Contact
         BirthDate = birthDate;
         CategoryId = categoryId;
     }
+    
+    #endregion
 }

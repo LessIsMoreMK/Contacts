@@ -3,10 +3,14 @@ using Contacts.Application.Commands.Categories;
 using Contacts.Application.Commands.Categories.Handlers;
 using Contacts.Application.Commands.Contacts;
 using Contacts.Application.Commands.Contacts.Handlers;
+using Contacts.Application.Commands.Users;
+using Contacts.Application.Commands.Users.Handlers;
 using Contacts.Application.Helpers;
 using Contacts.Domain.Repositories;
+using Contacts.Domain.Services;
 using Contacts.Infrastructure.Repositories;
 using Contacts.Infrastructure.Repositories.Postgres.DbContext;
+using Contacts.Infrastructure.Services;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +33,7 @@ public static class Extensions
         services
             .AddSingleton<DatabaseInitializer>()
             .AddSingleton<LoggerHelpers>()
+            .AddTransient<IPasswordService, PasswordService>()
         
             .AddPostgresDb<ApplicationDbContext>(() =>
             {
@@ -48,7 +53,8 @@ public static class Extensions
         services
             .AddTransient<ICommandHandler<AddCategoryRequest>, AddCategoryHandler>()
             .AddTransient<ICommandHandler<AddContactRequest>, AddContactHandler>()
-            .AddTransient<ICommandHandler<UpdateContactRequest>, UpdateContactHandler>();
+            .AddTransient<ICommandHandler<UpdateContactRequest>, UpdateContactHandler>()
+            .AddTransient<ICommandHandler<AddUserRequest>, AddUserHandler>();
         
         return services;
     }

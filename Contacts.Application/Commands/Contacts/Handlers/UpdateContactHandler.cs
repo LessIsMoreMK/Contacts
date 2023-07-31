@@ -2,7 +2,6 @@
 using Contacts.Application.Helpers;
 using Contacts.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Contacts.Application.Commands.Contacts.Handlers;
 
