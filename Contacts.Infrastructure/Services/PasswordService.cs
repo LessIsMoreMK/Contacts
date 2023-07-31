@@ -10,9 +10,8 @@ public class PasswordService : IPasswordService
     
     public string CreateSalt()
     {
-        var rng = new RNGCryptoServiceProvider();
         var buffer = new byte[16];
-        rng.GetBytes(buffer);
+        RandomNumberGenerator.Fill(buffer);
         return Convert.ToBase64String(buffer);
     }
 
