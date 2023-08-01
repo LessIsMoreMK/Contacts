@@ -1,4 +1,5 @@
 ﻿using Contacts.Infrastructure;
+using Contacts.Infrastructure.Helpers;
 using Contacts.Infrastructure.Repositories.Postgres.DbContext;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,7 @@ await dbInitializer.Initialize();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<CorsMiddleware>();
 
 EndpointBuilder.BuildApplicationEndpoints(app);
 
