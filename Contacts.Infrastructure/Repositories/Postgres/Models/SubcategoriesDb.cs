@@ -9,6 +9,7 @@ public class SubcategoriesDb
     public string Name { get; set; } = null!;
     
     public Guid CategoryId { get; set; }
+    
     public virtual CategoriesDb Category { get; set; }
     
     #endregion

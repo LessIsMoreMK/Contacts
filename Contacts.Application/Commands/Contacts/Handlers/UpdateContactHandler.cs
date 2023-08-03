@@ -28,7 +28,7 @@ public class UpdateContactHandler : ICommandHandler<UpdateContactRequest>
     
     public async Task HandleAsync(UpdateContactRequest command, HttpContext context)
     {
-        if (await _categoryRepository.GetCategoryByIdAsync(command.CategoryId) == null)
+        if (command.CategoryId == null || await _categoryRepository.GetCategoryByIdAsync(command.CategoryId.Value) == null)
         {
             await HttpHelpers.SetResponseAsync(context, HttpStatusCode.BadRequest, "Category id invalid");
             return;
@@ -51,7 +51,7 @@ public class UpdateContactHandler : ICommandHandler<UpdateContactRequest>
             return;
         }
         
-        contact.Update(command.FirstName, command.LastName, command.Email, command.Phone, command.BirthDate, command.CategoryId);
+        contact.Update(command.FirstName, command.LastName, command.Email, command.Phone, command.BirthDate, command.CategoryId.Value);
         await _contactsRepository.UpdateContactAsync(contact);
         
         await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Created, "Contact updated successfully");

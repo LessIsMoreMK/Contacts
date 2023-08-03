@@ -39,6 +39,8 @@ public class ContactsRepository : IContactsRepository
     {
         var contactDb = await _dbContext.Contacts
             .AsNoTracking()
+            .Include(c => c.Category)
+            .Include(c => c.SubCategory)
             .FirstOrDefaultAsync(c => c.Id == contactId);
         
         return contactDb?.Adapt<Contact>();
@@ -70,7 +72,6 @@ public class ContactsRepository : IContactsRepository
             throw new ArgumentNullException(nameof(contact));
         
         var existingContactDb = await _dbContext.Contacts
-            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == contact.Id);
     
         if (existingContactDb == null)

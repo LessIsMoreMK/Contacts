@@ -10,6 +10,7 @@
 /// <param name="Phone">The updated optional phone number of the contact.</param>
 /// <param name="BirthDate">The updated optional birth date of the contact.</param>
 /// <param name="CategoryId">The updated ID of the category to which the contact belongs.</param>
+/// <param name="SubCategoryId">The optional ID of the subcategory to which the contact belongs.</param>
 public record UpdateContactRequest(
     Guid Id,
     string FirstName, 
@@ -17,4 +18,5 @@ public record UpdateContactRequest(
     string? Email, 
     string? Phone, 
     DateTime? BirthDate,
-    Guid CategoryId);
+    Guid? CategoryId,
+    Guid? SubCategoryId);

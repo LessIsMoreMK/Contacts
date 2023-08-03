@@ -84,6 +84,9 @@ public static class EndpointBuilder
         
         // Endpoint to login
         app.MapPost("/login", HandleLogin);
+        
+        // Endpoint to logout
+        app.MapPost("/logout", HandleLogout);
     }
     
     #endregion
@@ -108,7 +111,8 @@ public static class EndpointBuilder
     }
 
     private static async Task HandleAddCategory(
-        HttpContext httpContext)
+        HttpContext httpContext, 
+        [FromServices] LoggerHelpers loggerHelper)
     {
         try
         {
@@ -125,6 +129,7 @@ public static class EndpointBuilder
         }
         catch (Exception ex)
         {
+            loggerHelper.LogError(ex, "Error occurred while HandleAddCategory");
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
@@ -172,7 +177,8 @@ public static class EndpointBuilder
         }
     }
     
-    private static async Task HandleAddContact(HttpContext httpContext)
+    private static async Task HandleAddContact(HttpContext httpContext, 
+        [FromServices] LoggerHelpers loggerHelper)
     {
         try
         {
@@ -189,12 +195,14 @@ public static class EndpointBuilder
         }
         catch (Exception ex)
         {
+            loggerHelper.LogError(ex, "Error occurred while HandleAddContact");
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
     }
     
-    private static async Task HandleUpdateContact(HttpContext httpContext)
+    private static async Task HandleUpdateContact(HttpContext httpContext, 
+        [FromServices] LoggerHelpers loggerHelper)
     {
         try
         {
@@ -211,6 +219,7 @@ public static class EndpointBuilder
         }
         catch (Exception ex)
         {
+            loggerHelper.LogError(ex, "Error occurred while HandleUpdateContact");
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
@@ -218,7 +227,8 @@ public static class EndpointBuilder
 
     private static async Task HandleDeleteContact(
         HttpContext httpContext, Guid id, 
-        [FromServices] IContactsRepository repository)
+        [FromServices] IContactsRepository repository, 
+        [FromServices] LoggerHelpers loggerHelper)
     {
         try
         {
@@ -230,6 +240,7 @@ public static class EndpointBuilder
         }
         catch (Exception ex)
         {
+            loggerHelper.LogError(ex, "Error occurred while HandleDeleteContact");
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
@@ -240,7 +251,8 @@ public static class EndpointBuilder
     #region Users
     
     public static async Task HandleAddUser(
-        HttpContext httpContext)
+        HttpContext httpContext, 
+        [FromServices] LoggerHelpers loggerHelper)
     {
         try
         {
@@ -255,43 +267,76 @@ public static class EndpointBuilder
             var addUserHandler = httpContext.RequestServices.GetRequiredService<ICommandHandler<AddUserRequest>>();
             await addUserHandler.HandleAsync(addUserRequest, httpContext);
         }
+        catch (ArgumentException ex)
+        {
+            loggerHelper.LogError(ex, "Error occurred while HandleAddUser");
+            await HttpHelpers.SetResponseAsync(httpContext, HttpStatusCode.BadRequest, ex.Message);
+        }
         catch (Exception ex)
         {
+            loggerHelper.LogError(ex, "Error occurred while HandleAddUser");
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
     }
     
-    private static async Task HandleLogin(HttpContext context)
+    private static async Task HandleLogin(HttpContext httpContext, 
+        [FromServices] LoggerHelpers loggerHelper)
     {
-        var loginRequest = await context.Request.ReadFromJsonAsync<LoginRequest>();
-    
-        if (loginRequest == null)
+        try
         {
-            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
-            await context.Response.WriteAsJsonAsync(new { Error = "Request body is null" });
-            return;
-        }
+            var loginRequest = await httpContext.Request.ReadFromJsonAsync<LoginRequest>();
 
-        var usersRepository = context.RequestServices.GetRequiredService<IUsersRepository>();
-        var passwordService = context.RequestServices.GetRequiredService<IPasswordService>();
-    
-        var user = await usersRepository.GetUserByUserNameAsync(loginRequest.UserName);
-    
-        if (user == null)
-        {
-            await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Unauthorized, "Invalid username or password");
-            return;
+            if (loginRequest == null)
+            {
+                httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(new {Error = "Request body is null"});
+                return;
+            }
+
+            var usersRepository = httpContext.RequestServices.GetRequiredService<IUsersRepository>();
+            var passwordService = httpContext.RequestServices.GetRequiredService<IPasswordService>();
+
+            var user = await usersRepository.GetUserByUserNameAsync(loginRequest.UserName);
+
+            if (user == null)
+            {
+                await HttpHelpers.SetResponseAsync(httpContext, HttpStatusCode.Unauthorized, "Invalid username or password");
+                return;
+            }
+
+            if (!passwordService.VerifyPassword(loginRequest.Password, user.Password, user.Salt))
+            {
+                await HttpHelpers.SetResponseAsync(httpContext, HttpStatusCode.Unauthorized, "Invalid username or password");
+                return;
+            }
+
+            var token = passwordService.GenerateJwtToken(user);
+            await httpContext.Response.WriteAsJsonAsync(new {token});
         }
-    
-        if (!passwordService.VerifyPassword(loginRequest.Password, user.Password, user.Salt))
+        catch (Exception ex)
         {
-            await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Unauthorized, "Invalid username or password");
-            return;
+            loggerHelper.LogError(ex, "Error occurred while HandleLogin");
+            httpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            await httpContext.Response.WriteAsJsonAsync(new {Error = ex.Message});
         }
+    }
     
-        var token = passwordService.GenerateJwtToken(user);
-        await context.Response.WriteAsJsonAsync(new { token });
+    private static async Task HandleLogout(HttpContext httpContext, 
+        [FromServices] LoggerHelpers loggerHelper)
+    {
+        try
+        {
+            //Just return OK for now
+            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
+            await httpContext.Response.WriteAsJsonAsync(new {Message = "Logout successful"});
+        }
+        catch (Exception ex)
+        {
+            loggerHelper.LogError(ex, "Error occurred while HandleLogout");
+            httpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            await httpContext.Response.WriteAsJsonAsync(new {Error = ex.Message});
+        }
     }
     
     #endregion

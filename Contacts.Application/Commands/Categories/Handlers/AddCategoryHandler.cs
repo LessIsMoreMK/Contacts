@@ -3,6 +3,7 @@ using Contacts.Application.Helpers;
 using Contacts.Domain.Entities;
 using Contacts.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace Contacts.Application.Commands.Categories.Handlers;
 
@@ -34,9 +35,10 @@ public class AddCategoryHandler : ICommandHandler<AddCategoryRequest>
         }
 
         var category = Category.Create(command.Name);
-        await _categoryRepository.AddCategoryAsync(category);
-
-        await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Created, "Category added successfully");
+        var categoryId = await _categoryRepository.AddCategoryAsync(category);
+        
+        var jsonResponse = JsonConvert.SerializeObject(new { Message = "Category added successfully", Id = categoryId });
+        await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Created, jsonResponse);
     }
     
     #endregion

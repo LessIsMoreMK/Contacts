@@ -9,10 +9,12 @@
 /// <param name="Phone">The optional phone number of the contact.</param>
 /// <param name="BirthDate">The optional birth date of the contact.</param>
 /// <param name="CategoryId">The ID of the category to which the contact belongs.</param>
+/// <param name="SubCategoryId">The optional ID of the subcategory to which the contact belongs.</param>
 public record AddContactRequest(
     string FirstName, 
     string? LastName, 
     string? Email, 
     string? Phone, 
     DateTime? BirthDate,
-    Guid CategoryId);
+    Guid? CategoryId,
+    Guid? SubCategoryId = null);

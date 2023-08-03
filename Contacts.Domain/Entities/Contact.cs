@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Contacts.Domain.Entities;
 
@@ -22,6 +21,7 @@ public partial class Contact
     public string? Phone { get; set; } 
     public DateTime? BirthDate { get; set; }
     public Guid CategoryId { get; set; }
+    public Guid? SubCategoryId { get; set; }
     
     #endregion
     
@@ -36,8 +36,9 @@ public partial class Contact
     /// <param name="phone"></param>
     /// <param name="birthDate"></param>
     /// <param name="categoryId"></param>
+    /// <param name="subCategoryId"></param>
     /// <returns>Contact instance</returns>
-    public static Contact Create(string firstName, string? lastName, string? email, string? phone, DateTime? birthDate, Guid categoryId)
+    public static Contact Create(string firstName, string? lastName, string? email, string? phone, DateTime? birthDate, Guid categoryId, Guid? subCategoryId = null)
     {
         if (string.IsNullOrEmpty(firstName))
             throw new ArgumentNullException(nameof(firstName));
@@ -57,6 +58,7 @@ public partial class Contact
         contact.Phone = phone;
         contact.BirthDate = birthDate;
         contact.CategoryId = categoryId;
+        contact.SubCategoryId = subCategoryId;
         
         return contact;
     }
@@ -70,7 +72,8 @@ public partial class Contact
     /// <param name="phone"></param>
     /// <param name="birthDate"></param>
     /// <param name="categoryId"></param>
-    public void Update(string firstName, string? lastName, string? email, string? phone, DateTime? birthDate, Guid categoryId)
+    /// <param name="subCategoryId"></param>
+    public void Update(string firstName, string? lastName, string? email, string? phone, DateTime? birthDate, Guid categoryId, Guid? subCategoryId = null)
     {
         if (string.IsNullOrEmpty(firstName))
             throw new ArgumentNullException(nameof(firstName));
@@ -87,6 +90,7 @@ public partial class Contact
         Phone = phone;
         BirthDate = birthDate;
         CategoryId = categoryId;
+        SubCategoryId = subCategoryId;
     }
     
     #endregion

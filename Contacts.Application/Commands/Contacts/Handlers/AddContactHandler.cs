@@ -29,7 +29,7 @@ public class AddContactHandler : ICommandHandler<AddContactRequest>
     
     public async Task HandleAsync(AddContactRequest command, HttpContext context)
     {
-        if (await _categoryRepository.GetCategoryByIdAsync(command.CategoryId) == null)
+        if (command.CategoryId == null || await _categoryRepository.GetCategoryByIdAsync(command.CategoryId.Value) == null)
         {
             await HttpHelpers.SetResponseAsync(context, HttpStatusCode.BadRequest, "Category id invalid");
             return;
@@ -41,7 +41,7 @@ public class AddContactHandler : ICommandHandler<AddContactRequest>
             return;
         }
 
-        var contact = Contact.Create(command.FirstName, command.LastName, command.Email, command.Phone, command.BirthDate, command.CategoryId);
+        var contact = Contact.Create(command.FirstName, command.LastName, command.Email, command.Phone, command.BirthDate, command.CategoryId.Value, command.SubCategoryId);
         await _contactsRepository.AddContactAsync(contact);
         
         await HttpHelpers.SetResponseAsync(context, HttpStatusCode.Created, "Contact added successfully");

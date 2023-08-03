@@ -31,5 +31,6 @@ public interface ICategoryRepository
     /// Adds a new category to the database.
     /// </summary>
     /// <param name="category">The Category entity to add.</param>
-    public Task AddCategoryAsync(Category category);
+    /// <returns>Created category GUID</returns>
+    public Task<Guid> AddCategoryAsync(Category category);
 }

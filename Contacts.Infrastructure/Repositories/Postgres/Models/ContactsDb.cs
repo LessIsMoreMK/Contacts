@@ -16,5 +16,8 @@ public class ContactsDb
     public Guid CategoryId { get; set; }
     public virtual CategoriesDb Category { get; set; } = null!;
     
+    public Guid? SubCategoryId { get; set; }
+    public virtual SubcategoriesDb SubCategory { get; set; } = null!;
+
     #endregion
 }

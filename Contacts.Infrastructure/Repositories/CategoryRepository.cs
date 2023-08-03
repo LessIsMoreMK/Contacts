@@ -57,7 +57,7 @@ public class CategoryRepository : ICategoryRepository
         return contactDb?.Adapt<Category>();
     }
 
-    public async Task AddCategoryAsync(Category category)
+    public async Task<Guid> AddCategoryAsync(Category category)
     {
         if (category == null) 
             throw new ArgumentNullException(nameof(category));
@@ -66,6 +66,8 @@ public class CategoryRepository : ICategoryRepository
         
         await _dbContext.Categories.AddAsync(cryptoDataDb);
         await _dbContext.SaveChangesAsync();
+        
+        return cryptoDataDb.Id;
     }
 
     #endregion
